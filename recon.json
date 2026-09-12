@@ -4,7 +4,7 @@
   "rules": [
     {
       "id": "no-is-record",
-      "message": "Do not add isRecord; validate the concrete boundary directly.",
+      "message": "isRecord is pure slop. don't be so dumb. do better. be better.",
       "target": "added-lines",
       "extension": [
         ".ts"

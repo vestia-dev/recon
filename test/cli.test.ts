@@ -48,6 +48,36 @@ describe("Recon CLI", () => {
     expect(short.stdout.toString()).toContain("Run 'recon get-docs-url'")
   })
 
+  test("installs the Recon agent skill", async () => {
+    const root = await mkdtemp(join(tmpdir(), "recon-cli-test-"))
+    directories.push(root)
+    git(root, "init", "-b", "main")
+
+    const installed = command(root, "skill", "install")
+    expect(installed.success).toBeTrue()
+    const path = join(root, ".agents/skills/recon/SKILL.md")
+    expect(await Bun.file(path).text()).toContain("name: recon")
+    expect(installed.stdout.toString()).toContain(path)
+
+    await writeFile(path, "custom skill\n")
+    const conflict = command(root, "skill", "install")
+    expect(conflict.exitCode).toBe(1)
+    expect(conflict.stderr.toString()).toContain("use --force")
+
+    const forced = command(root, "skill", "install", "--force")
+    expect(forced.success).toBeTrue()
+    expect(await Bun.file(path).text()).toContain("# Recon")
+
+    const removed = command(root, "skill", "remove")
+    expect(removed.success).toBeTrue()
+    expect(await Bun.file(path).exists()).toBeFalse()
+    expect(removed.stdout.toString()).toContain(path)
+
+    const missing = command(root, "skill", "remove")
+    expect(missing.exitCode).toBe(1)
+    expect(missing.stderr.toString()).toContain("is not installed")
+  })
+
   test("adds, checks, lists, shows, and removes a rule", async () => {
     const root = await mkdtemp(join(tmpdir(), "recon-cli-test-"))
     directories.push(root)

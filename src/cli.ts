@@ -6,6 +6,7 @@ import { emptyConfig, readConfig, writeConfig } from "./config"
 import { collectChanges, findGitRoot } from "./git"
 import { findGuidance } from "./matcher"
 import { targets, type Rule } from "./model"
+import { installSkill, removeSkill } from "./skill"
 import { updateRecon } from "./update"
 import { docsUrl, version } from "./version"
 
@@ -20,6 +21,7 @@ Commands:
   list                          List configured rules
   show <rule-id>                Print one rule as JSON
   remove <rule-id>              Remove one rule
+  skill install|remove          Install or remove the Recon agent skill
   update [version]              Install the latest or specified version
   upgrade [version]             Alias for update
   get-docs-url                  Print the documentation URL
@@ -37,7 +39,16 @@ interface ParsedOptions {
   readonly positional: ReadonlyArray<string>
 }
 
-const booleanFlags = new Set(["help", "version", "strict", "json", "staged", "case-sensitive"])
+const booleanFlags = new Set([
+  "help",
+  "version",
+  "strict",
+  "json",
+  "staged",
+  "case-sensitive",
+  "global",
+  "force",
+])
 const valueFlags = new Set([
   "base",
   "config",
@@ -63,6 +74,10 @@ const parseOptions = (args: ReadonlyArray<string>): ParsedOptions => {
     const argument = args[index]
     if (argument === "-h") {
       flags.add("help")
+      continue
+    }
+    if (argument === "-g") {
+      flags.add("global")
       continue
     }
     if (!argument.startsWith("--")) {
@@ -207,6 +222,23 @@ const run = async (args: ReadonlyArray<string>, cwd = process.cwd()): Promise<nu
     rejectUnexpected(options, [], [])
     if (options.positional.length > 1) throw new Error(`recon ${command} accepts at most one version`)
     console.log(await updateRecon(options.positional[0]))
+    return 0
+  }
+  if (command === "skill") {
+    if (options.positional.length !== 1 || !["install", "remove"].includes(options.positional[0]!)) {
+      throw new Error("usage: recon skill <install|remove> [-g|--global] [--force]")
+    }
+    const global = options.flags.has("global")
+    const root = global ? undefined : findGitRoot(cwd)
+    if (options.positional[0] === "install") {
+      rejectUnexpected(options, [], ["global", "force"])
+      const path = await installSkill({ root, global, force: options.flags.has("force") })
+      console.log(`Installed Recon skill to ${path}`)
+    } else {
+      rejectUnexpected(options, [], ["global"])
+      const path = await removeSkill({ root, global })
+      console.log(`Removed Recon skill from ${path}`)
+    }
     return 0
   }
 
