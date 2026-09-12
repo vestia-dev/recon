@@ -34,6 +34,10 @@ for (const target of targets) {
   artifacts.push(name)
 }
 
+const skillArtifact = "recon-skill.md"
+await copyFile("skills/recon/SKILL.md", `${outputDirectory}/${skillArtifact}`)
+artifacts.push(skillArtifact)
+
 const checksums = await Promise.all(
   artifacts.map(async (artifact) => {
     const digest = createHash("sha256")

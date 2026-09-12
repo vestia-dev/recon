@@ -68,6 +68,16 @@ describe("Recon CLI", () => {
     expect(forced.success).toBeTrue()
     expect(await Bun.file(path).text()).toContain("# Recon")
 
+    await writeFile(path, "outdated skill\n")
+    const updated = command(root, "skill", "update")
+    expect(updated.success).toBeTrue()
+    expect(await Bun.file(path).text()).toContain("# Recon")
+
+    await writeFile(path, "outdated again\n")
+    const upgraded = command(root, "skill", "upgrade")
+    expect(upgraded.success).toBeTrue()
+    expect(await Bun.file(path).text()).toContain("# Recon")
+
     const removed = command(root, "skill", "remove")
     expect(removed.success).toBeTrue()
     expect(await Bun.file(path).exists()).toBeFalse()
@@ -76,6 +86,10 @@ describe("Recon CLI", () => {
     const missing = command(root, "skill", "remove")
     expect(missing.exitCode).toBe(1)
     expect(missing.stderr.toString()).toContain("is not installed")
+
+    const missingUpdate = command(root, "skill", "update")
+    expect(missingUpdate.exitCode).toBe(1)
+    expect(missingUpdate.stderr.toString()).toContain("is not installed")
   })
 
   test("adds, checks, lists, shows, and removes a rule", async () => {

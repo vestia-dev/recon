@@ -30,6 +30,11 @@ const readExisting = async (path: string): Promise<string | undefined> => {
   }
 }
 
+const writeSkill = async (path: string, contents: string): Promise<void> => {
+  await mkdir(dirname(path), { recursive: true })
+  await writeFile(path, contents, "utf8")
+}
+
 export const installSkill = async (options: InstallSkillOptions): Promise<string> => {
   const path = skillPath(options)
   const existing = await readExisting(path)
@@ -37,9 +42,30 @@ export const installSkill = async (options: InstallSkillOptions): Promise<string
     throw new Error(`${path} already exists and differs from the bundled skill; use --force to replace it`)
   }
 
-  await mkdir(dirname(path), { recursive: true })
-  await writeFile(path, skillContents, "utf8")
+  await writeSkill(path, skillContents)
   return path
+}
+
+export const updateSkill = async (options: SkillOptions): Promise<string> => {
+  const path = skillPath(options)
+  if ((await readExisting(path)) === undefined) {
+    throw new Error(`Recon skill is not installed at ${path}`)
+  }
+  await writeSkill(path, skillContents)
+  return path
+}
+
+export const updateInstalledSkills = async (
+  root: string | undefined,
+  contents = skillContents,
+): Promise<ReadonlyArray<string>> => {
+  const paths = [skillPath({ root, global: true })]
+  if (root) paths.unshift(skillPath({ root, global: false }))
+  const installed = (
+    await Promise.all(paths.map(async (path) => ((await readExisting(path)) === undefined ? undefined : path)))
+  ).filter((path): path is string => path !== undefined)
+  await Promise.all(installed.map((path) => writeSkill(path, contents)))
+  return installed
 }
 
 export const removeSkill = async (options: SkillOptions): Promise<string> => {

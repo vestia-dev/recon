@@ -186,21 +186,26 @@ recon upgrade v0.2.0
 Self-update verifies the executable against the release checksum and is
 available only in official standalone builds.
 
-### `recon skill install` and `recon skill remove`
+### `recon skill install`, `remove`, `update`, and `upgrade`
 
-Install or remove the bundled Recon skill for coding agents. Project commands
-use the open agent skills convention at `.agents/skills/recon/SKILL.md` in the
-Git root.
+Manage the bundled Recon skill for coding agents. Project commands use the open
+agent skills convention at `.agents/skills/recon/SKILL.md` in the Git root.
 
 ```text
 recon skill install [-g|--global] [--force]
 recon skill remove [-g|--global]
+recon skill update [-g|--global]
+recon skill upgrade [-g|--global]
 ```
 
 Use `--global` to operate on the user-level skill at
 `$XDG_CONFIG_HOME/agents/skills/recon/SKILL.md` (or
 `~/.config/agents/skills/recon/SKILL.md`). Recon refuses to replace a modified
-skill unless `--force` is supplied.
+skill during installation unless `--force` is supplied. `update` and `upgrade`
+are aliases and replace an existing skill with the version bundled in Recon.
+
+`recon update` and `recon upgrade` also update installed project and global
+skills from the checksummed skill included in the target release.
 
 ### `recon get-docs-url`
 

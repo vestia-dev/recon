@@ -1,35 +1,43 @@
 ---
 name: recon
-description: Use when working in a Git repository configured with Recon, or when asked to check current code changes against repository-defined advisory rules.
+description: Command reference for using Recon to check Git changes against repository-defined advisory rules.
 ---
 
 # Recon
 
 Recon checks active Git changes against advisory rules stored in `recon.json`.
 
-## Workflow
-
-1. Make the requested code changes.
-2. Run `recon check` before finishing.
-3. Read every finding and inspect the reported files and lines.
-4. Apply guidance that is relevant to the user's request. Recon findings are contextual advice, not automatic proof that the code is wrong.
-5. Run `recon check` again after addressing findings.
-6. Summarize any finding you intentionally did not address and why.
-
-Do not remove, weaken, or bypass a Recon rule merely to clear a finding unless the user explicitly asks you to change the repository's rules.
-
-## Useful commands
+## Check changes
 
 ```sh
 recon check                 # Check index, working tree, and untracked files against HEAD
 recon check --staged        # Check only staged changes
 recon check --base <ref>    # Check changes relative to a Git revision
 recon check --json          # Emit structured findings
-recon list                  # List configured rules
-recon show <rule-id>        # Inspect one rule
-recon get-docs-url          # Print documentation for the installed Recon version
+recon check --strict        # Exit with status 1 when findings exist
 ```
 
-Use `--strict` only when the exit code must indicate whether findings exist. Without it, findings are advisory and `recon check` exits successfully.
+`--staged` and `--base` cannot be used together. Use `--config <path>` to read a
+configuration other than `recon.json` at the Git root.
 
-If `recon.json` is absent, do not create one unless the user asks to configure Recon.
+Without `--strict`, findings are advisory and the command exits with status 0.
+
+## Inspect and manage rules
+
+```sh
+recon init                  # Create an empty recon.json
+recon list                  # List configured rules
+recon show <rule-id>        # Print one rule as JSON
+recon remove <rule-id>      # Remove one rule
+recon add [options]         # Add a rule
+```
+
+Use the documentation from `recon get-docs-url` for the complete set of rule
+matching options.
+
+## Documentation and version
+
+```sh
+recon get-docs-url          # Print documentation for the installed version
+recon --version             # Print the installed version
+```

@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto"
 import { chmod, rename, rm, writeFile } from "node:fs/promises"
 import { dirname, join } from "node:path"
+import { updateInstalledSkills } from "./skill"
 import { buildTarget, version } from "./version"
 
 const repository = "vestia-dev/recon"
@@ -79,35 +80,49 @@ const replaceOnWindows = async (executable: string, replacement: string): Promis
   child.unref()
 }
 
-export const updateRecon = async (requested?: string): Promise<string> => {
+const withUpdatedSkills = (message: string, paths: ReadonlyArray<string>): string =>
+  paths.length === 0 ? message : `${message}\nUpdated Recon skill at ${paths.join(", ")}.`
+
+export const updateRecon = async (requested?: string, root?: string): Promise<string> => {
   if (!Bun.isStandaloneExecutable || version === "development" || buildTarget === "development") {
     throw new Error("self-update is only available in an official standalone Recon executable")
   }
 
   const targetVersion = requested ? normalizeVersion(requested) : await latestVersion()
-  if (targetVersion === version) return `Recon ${version} is already installed.`
+  if (targetVersion === version) {
+    return withUpdatedSkills(`Recon ${version} is already installed.`, await updateInstalledSkills(root))
+  }
 
   const artifact = `recon-${buildTarget}${process.platform === "win32" ? ".exe" : ""}`
+  const skillArtifact = "recon-skill.md"
   const release = `${releaseRoot}/download/v${targetVersion}`
-  const [binary, checksums] = await Promise.all([
+  const [binary, skill, checksums] = await Promise.all([
     download(`${release}/${artifact}`),
+    download(`${release}/${skillArtifact}`),
     download(`${release}/checksums.txt`).then((bytes) => new TextDecoder().decode(bytes)),
   ])
   const actual = createHash("sha256").update(binary).digest("hex")
   const expected = expectedChecksum(checksums, artifact)
   if (actual !== expected) throw new Error(`checksum verification failed for ${artifact}`)
+  const actualSkill = createHash("sha256").update(skill).digest("hex")
+  const expectedSkill = expectedChecksum(checksums, skillArtifact)
+  if (actualSkill !== expectedSkill) throw new Error(`checksum verification failed for ${skillArtifact}`)
 
   const executable = process.execPath
   const replacement = join(dirname(executable), `.recon-update-${process.pid}${process.platform === "win32" ? ".exe" : ""}`)
   try {
     await writeFile(replacement, binary)
+    const skillPaths = await updateInstalledSkills(root, new TextDecoder().decode(skill))
     if (process.platform === "win32") {
       await replaceOnWindows(executable, replacement)
-      return `Recon will update from ${version} to ${targetVersion} after this command exits.`
+      return withUpdatedSkills(
+        `Recon will update from ${version} to ${targetVersion} after this command exits.`,
+        skillPaths,
+      )
     }
     await chmod(replacement, 0o755)
     await rename(replacement, executable)
-    return `Updated Recon from ${version} to ${targetVersion}.`
+    return withUpdatedSkills(`Updated Recon from ${version} to ${targetVersion}.`, skillPaths)
   } catch (error) {
     await rm(replacement, { force: true }).catch(() => undefined)
     throw error

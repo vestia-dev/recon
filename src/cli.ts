@@ -6,7 +6,7 @@ import { emptyConfig, readConfig, writeConfig } from "./config"
 import { collectChanges, findGitRoot } from "./git"
 import { findGuidance } from "./matcher"
 import { targets, type Rule } from "./model"
-import { installSkill, removeSkill } from "./skill"
+import { installSkill, removeSkill, updateSkill } from "./skill"
 import { updateRecon } from "./update"
 import { docsUrl, version } from "./version"
 
@@ -22,6 +22,7 @@ Commands:
   show <rule-id>                Print one rule as JSON
   remove <rule-id>              Remove one rule
   skill install|remove          Install or remove the Recon agent skill
+  skill update|upgrade          Update the installed Recon agent skill
   update [version]              Install the latest or specified version
   upgrade [version]             Alias for update
   get-docs-url                  Print the documentation URL
@@ -221,12 +222,21 @@ const run = async (args: ReadonlyArray<string>, cwd = process.cwd()): Promise<nu
   if (command === "update" || command === "upgrade") {
     rejectUnexpected(options, [], [])
     if (options.positional.length > 1) throw new Error(`recon ${command} accepts at most one version`)
-    console.log(await updateRecon(options.positional[0]))
+    let root: string | undefined
+    try {
+      root = findGitRoot(cwd)
+    } catch {
+      root = undefined
+    }
+    console.log(await updateRecon(options.positional[0], root))
     return 0
   }
   if (command === "skill") {
-    if (options.positional.length !== 1 || !["install", "remove"].includes(options.positional[0]!)) {
-      throw new Error("usage: recon skill <install|remove> [-g|--global] [--force]")
+    if (
+      options.positional.length !== 1 ||
+      !["install", "remove", "update", "upgrade"].includes(options.positional[0]!)
+    ) {
+      throw new Error("usage: recon skill <install|remove|update|upgrade> [-g|--global] [--force]")
     }
     const global = options.flags.has("global")
     const root = global ? undefined : findGitRoot(cwd)
@@ -234,10 +244,14 @@ const run = async (args: ReadonlyArray<string>, cwd = process.cwd()): Promise<nu
       rejectUnexpected(options, [], ["global", "force"])
       const path = await installSkill({ root, global, force: options.flags.has("force") })
       console.log(`Installed Recon skill to ${path}`)
-    } else {
+    } else if (options.positional[0] === "remove") {
       rejectUnexpected(options, [], ["global"])
       const path = await removeSkill({ root, global })
       console.log(`Removed Recon skill from ${path}`)
+    } else {
+      rejectUnexpected(options, [], ["global"])
+      const path = await updateSkill({ root, global })
+      console.log(`Updated Recon skill at ${path}`)
     }
     return 0
   }
