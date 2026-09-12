@@ -1,6 +1,8 @@
 # Recon
 
-Recon compares Git changes with repository-defined advisory rules.
+Recon is a soft code-audit CLI for AI coding agents working on active,
+uncommitted changes. Repositories define what to look for, and Recon returns
+natural-language guidance rather than enforcing hard lint rules.
 
 - Recon is language-independent.
 - Rules are stored in `recon.json`.
