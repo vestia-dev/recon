@@ -8,11 +8,13 @@ Recon is a soft code-audit CLI for AI coding agents working on active,
 uncommitted changes. Repositories define what to look for, and Recon returns
 natural-language guidance rather than enforcing hard lint rules.
 
+<img src="./recon-example.png" alt="Recon binoculars" align="middle">
+
+
 - Recon is language-independent.
 - Rules are stored in `recon.json`.
 - Findings exit with status `0` by default.
 - `--strict` makes findings exit with status `1`.
-- The standalone executable does not require Bun or Node.js.
 - Git is required for rule management and change checking.
 
 ## Install
