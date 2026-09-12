@@ -1,8 +1,8 @@
-<p align="center">
-  <img src="./binoculars.png" alt="Recon binoculars" width="240">
-</p>
-
-# Recon
+<h1 align="center">
+  <img src="./binoculars.png" alt="Recon binoculars" width="84" height="50">
+  <br>
+  Recon
+</h1>
 
 Recon is a soft code-audit CLI for AI coding agents working on active,
 uncommitted changes. Repositories define what to look for, and Recon returns
