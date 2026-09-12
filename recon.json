@@ -1,0 +1,17 @@
+{
+  "$schema": "https://raw.githubusercontent.com/vestia-dev/recon/main/recon.schema.json",
+  "configVersion": 1,
+  "rules": [
+    {
+      "id": "no-is-record",
+      "message": "Do not add isRecord; validate the concrete boundary directly.",
+      "target": "added-lines",
+      "extension": [
+        ".ts"
+      ],
+      "contentRegex": [
+        "\\bisRecord\\b"
+      ]
+    }
+  ]
+}
