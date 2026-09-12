@@ -25,9 +25,6 @@ export const emptyConfig = (): ReconConfig => ({
   rules: [],
 })
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === "object" && value !== null && !Array.isArray(value)
-
 const stringArray = (value: unknown, field: string): ReadonlyArray<string> | undefined => {
   if (value === undefined) return undefined
   if (!Array.isArray(value) || value.some((entry) => typeof entry !== "string" || entry.length === 0)) {
@@ -37,34 +34,47 @@ const stringArray = (value: unknown, field: string): ReadonlyArray<string> | und
 }
 
 const validateRule = (value: unknown, index: number): Rule => {
-  if (!isRecord(value)) throw new Error(`rules[${index}] must be an object`)
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    throw new Error(`rules[${index}] must be an object`)
+  }
+  const input = value as { readonly [field: string]: unknown }
 
-  for (const field of Object.keys(value)) {
+  for (const field of Object.keys(input)) {
     if (!ruleFields.has(field)) throw new Error(`rules[${index}] has unknown field ${field}`)
   }
 
-  if (typeof value.id !== "string" || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value.id)) {
+  if (
+    typeof input.id !== "string" ||
+    !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(input.id)
+  ) {
     throw new Error(`rules[${index}].id must use lowercase words separated by hyphens`)
   }
-  if (typeof value.message !== "string" || value.message.trim().length === 0) {
+  if (
+    typeof input.message !== "string" ||
+    input.message.trim().length === 0
+  ) {
     throw new Error(`rules[${index}].message must be a non-empty string`)
   }
-  if (typeof value.target !== "string" || !targets.includes(value.target as Target)) {
+  if (
+    typeof input.target !== "string" ||
+    !targets.includes(input.target as Target)
+  ) {
     throw new Error(`rules[${index}].target must be one of: ${targets.join(", ")}`)
   }
-  if (value.caseSensitive !== undefined && typeof value.caseSensitive !== "boolean") {
+  const caseSensitive = input.caseSensitive
+  if (caseSensitive !== undefined && typeof caseSensitive !== "boolean") {
     throw new Error(`rules[${index}].caseSensitive must be a boolean`)
   }
 
-  const contentRegex = stringArray(value.contentRegex, `rules[${index}].contentRegex`)
+  const contentRegex = stringArray(input.contentRegex, `rules[${index}].contentRegex`)
   const excludeContentRegex = stringArray(
-    value.excludeContentRegex,
+    input.excludeContentRegex,
     `rules[${index}].excludeContentRegex`,
   )
   if (
     (contentRegex || excludeContentRegex) &&
-    value.target !== "added-lines" &&
-    value.target !== "deleted-lines"
+    input.target !== "added-lines" &&
+    input.target !== "deleted-lines"
   ) {
     throw new Error(`rules[${index}] can only use content regexes with a line target`)
   }
@@ -78,33 +88,39 @@ const validateRule = (value: unknown, index: number): Rule => {
   }
 
   return {
-    id: value.id,
-    message: value.message.trim(),
-    target: value.target as Target,
-    include: stringArray(value.include, `rules[${index}].include`),
-    exclude: stringArray(value.exclude, `rules[${index}].exclude`),
-    name: stringArray(value.name, `rules[${index}].name`),
-    excludeName: stringArray(value.excludeName, `rules[${index}].excludeName`),
-    extension: stringArray(value.extension, `rules[${index}].extension`),
-    excludeExtension: stringArray(value.excludeExtension, `rules[${index}].excludeExtension`),
+    id: input.id,
+    message: input.message.trim(),
+    target: input.target as Target,
+    include: stringArray(input.include, `rules[${index}].include`),
+    exclude: stringArray(input.exclude, `rules[${index}].exclude`),
+    name: stringArray(input.name, `rules[${index}].name`),
+    excludeName: stringArray(input.excludeName, `rules[${index}].excludeName`),
+    extension: stringArray(input.extension, `rules[${index}].extension`),
+    excludeExtension: stringArray(input.excludeExtension, `rules[${index}].excludeExtension`),
     contentRegex,
     excludeContentRegex,
-    caseSensitive: value.caseSensitive,
+    caseSensitive,
   }
 }
 
 export const validateConfig = (value: unknown): ReconConfig => {
-  if (!isRecord(value)) throw new Error("configuration must be an object")
-  for (const field of Object.keys(value)) {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    throw new Error("configuration must be an object")
+  }
+  const input = value as { readonly [field: string]: unknown }
+  for (const field of Object.keys(input)) {
     if (!configFields.has(field)) throw new Error(`configuration has unknown field ${field}`)
   }
-  if (value.$schema !== undefined && typeof value.$schema !== "string") {
+  const schema = input.$schema
+  if (schema !== undefined && typeof schema !== "string") {
     throw new Error("$schema must be a string")
   }
-  if (value.configVersion !== 1) throw new Error("configVersion must be 1")
-  if (!Array.isArray(value.rules)) throw new Error("rules must be an array")
+  if (input.configVersion !== 1) {
+    throw new Error("configVersion must be 1")
+  }
+  if (!Array.isArray(input.rules)) throw new Error("rules must be an array")
 
-  const rules = value.rules.map(validateRule)
+  const rules = input.rules.map(validateRule)
   const ids = new Set<string>()
   for (const rule of rules) {
     if (ids.has(rule.id)) throw new Error(`duplicate rule ID: ${rule.id}`)
@@ -112,7 +128,7 @@ export const validateConfig = (value: unknown): ReconConfig => {
   }
 
   return {
-    ...(value.$schema === undefined ? {} : { $schema: value.$schema }),
+    ...(schema === undefined ? {} : { $schema: schema }),
     configVersion: 1,
     rules,
   }
@@ -122,14 +138,13 @@ export const readConfig = async (path: string, allowMissing = false): Promise<Re
   try {
     return validateConfig(JSON.parse(await readFile(path, "utf8")))
   } catch (error) {
-    if (allowMissing && isMissingFile(error)) return emptyConfig()
+    if (allowMissing && error instanceof Error && "code" in error && error.code === "ENOENT") {
+      return emptyConfig()
+    }
     if (error instanceof SyntaxError) throw new Error(`${path} contains invalid JSON: ${error.message}`)
     throw error
   }
 }
-
-const isMissingFile = (error: unknown): boolean =>
-  isRecord(error) && error.code === "ENOENT"
 
 export const writeConfig = async (path: string, config: ReconConfig): Promise<void> => {
   const validated = validateConfig(config)
