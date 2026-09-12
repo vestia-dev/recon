@@ -193,6 +193,15 @@ Print the installed Recon version.
 recon --version
 ```
 
+### `recon --help`
+
+Print command help. `-h` is an alias for `--help`.
+
+```text
+recon -h
+recon --help
+```
+
 ## `recon.json` reference
 
 The default configuration path is `<git-root>/recon.json`.
@@ -200,7 +209,7 @@ The default configuration path is `<git-root>/recon.json`.
 ```json
 {
   "$schema": "https://raw.githubusercontent.com/vestia-dev/recon/main/recon.schema.json",
-  "version": 1,
+  "configVersion": 1,
   "rules": []
 }
 ```
@@ -210,7 +219,7 @@ The default configuration path is `<git-root>/recon.json`.
 | Field | Type | Required | Value |
 | --- | --- | --- | --- |
 | `$schema` | String | No | JSON Schema URL used by editors. |
-| `version` | Number | Yes | Must be `1`. |
+| `configVersion` | Number | Yes | Recon configuration format; must be `1`. |
 | `rules` | Array of rules | Yes | Rules evaluated in array order. |
 
 ### Rule fields
@@ -270,7 +279,7 @@ recon add \
 ```json
 {
   "$schema": "https://raw.githubusercontent.com/vestia-dev/recon/main/recon.schema.json",
-  "version": 1,
+  "configVersion": 1,
   "rules": [
     {
       "id": "new-types",
@@ -300,7 +309,7 @@ recon add \
 ```json
 {
   "$schema": "https://raw.githubusercontent.com/vestia-dev/recon/main/recon.schema.json",
-  "version": 1,
+  "configVersion": 1,
   "rules": [
     {
       "id": "no-generated-files",
@@ -332,7 +341,7 @@ recon add \
 ```json
 {
   "$schema": "https://raw.githubusercontent.com/vestia-dev/recon/main/recon.schema.json",
-  "version": 1,
+  "configVersion": 1,
   "rules": [
     {
       "id": "approved-schema-files",
@@ -362,7 +371,7 @@ recon add \
 ```json
 {
   "$schema": "https://raw.githubusercontent.com/vestia-dev/recon/main/recon.schema.json",
-  "version": 1,
+  "configVersion": 1,
   "rules": [
     {
       "id": "no-snapshots",
@@ -393,7 +402,7 @@ recon add \
 ```json
 {
   "$schema": "https://raw.githubusercontent.com/vestia-dev/recon/main/recon.schema.json",
-  "version": 1,
+  "configVersion": 1,
   "rules": [
     {
       "id": "immutable-generated-client",
@@ -422,7 +431,7 @@ recon add \
 ```json
 {
   "$schema": "https://raw.githubusercontent.com/vestia-dev/recon/main/recon.schema.json",
-  "version": 1,
+  "configVersion": 1,
   "rules": [
     {
       "id": "preserve-migrations",
@@ -452,7 +461,7 @@ recon add \
 ```json
 {
   "$schema": "https://raw.githubusercontent.com/vestia-dev/recon/main/recon.schema.json",
-  "version": 1,
+  "configVersion": 1,
   "rules": [
     {
       "id": "preserve-permission-checks",

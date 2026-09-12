@@ -22,6 +22,7 @@ Usage:
   recon upgrade [version]
   recon get-docs-url
   recon --version
+  recon -h | --help
 
 Targets:
   added-files, added-lines, deleted-files, deleted-lines
@@ -69,6 +70,10 @@ const parseOptions = (args: ReadonlyArray<string>): ParsedOptions => {
 
   for (let index = 0; index < args.length; index += 1) {
     const argument = args[index]
+    if (argument === "-h") {
+      flags.add("help")
+      continue
+    }
     if (!argument.startsWith("--")) {
       positional.push(argument)
       continue
@@ -188,7 +193,7 @@ const ensureNoPositionals = (options: ParsedOptions, command: string): void => {
 
 const run = async (args: ReadonlyArray<string>, cwd = process.cwd()): Promise<number> => {
   const first = args[0]
-  const command = first && !first.startsWith("--") ? first : "check"
+  const command = first && !first.startsWith("-") ? first : "check"
   const commandArgs = command === "check" && first !== "check" ? args : args.slice(1)
   const options = parseOptions(commandArgs)
   if (options.flags.has("help") || command === "help") {

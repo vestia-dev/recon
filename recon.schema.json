@@ -4,10 +4,10 @@
   "title": "Recon configuration",
   "type": "object",
   "additionalProperties": false,
-  "required": ["version", "rules"],
+  "required": ["configVersion", "rules"],
   "properties": {
     "$schema": { "type": "string" },
-    "version": { "const": 1 },
+    "configVersion": { "const": 1 },
     "rules": {
       "type": "array",
       "items": { "$ref": "#/$defs/rule" }

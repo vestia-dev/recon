@@ -5,7 +5,7 @@ describe("configuration", () => {
   test("accepts a valid rule", () => {
     expect(
       validateConfig({
-        version: 1,
+        configVersion: 1,
         rules: [
           {
             id: "no-snapshots",
@@ -21,7 +21,7 @@ describe("configuration", () => {
   test("rejects content matching for file targets", () => {
     expect(() =>
       validateConfig({
-        version: 1,
+        configVersion: 1,
         rules: [
           {
             id: "invalid",
@@ -35,6 +35,10 @@ describe("configuration", () => {
   })
 
   test("creates a versioned empty configuration", () => {
-    expect(emptyConfig()).toMatchObject({ version: 1, rules: [] })
+    expect(emptyConfig()).toMatchObject({ configVersion: 1, rules: [] })
+  })
+
+  test("rejects the obsolete version field", () => {
+    expect(() => validateConfig({ version: 1, rules: [] })).toThrow("unknown field version")
   })
 })

@@ -36,6 +36,16 @@ describe("Recon CLI", () => {
     expect(update.stderr.toString()).toContain("official standalone Recon executable")
   })
 
+  test("accepts -h as an alias for --help", async () => {
+    const root = await mkdtemp(join(tmpdir(), "recon-cli-test-"))
+    directories.push(root)
+
+    const short = command(root, "-h")
+    const long = command(root, "--help")
+    expect(short.success).toBeTrue()
+    expect(short.stdout.toString()).toBe(long.stdout.toString())
+  })
+
   test("adds, checks, lists, shows, and removes a rule", async () => {
     const root = await mkdtemp(join(tmpdir(), "recon-cli-test-"))
     directories.push(root)

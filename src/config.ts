@@ -17,11 +17,11 @@ const ruleFields = new Set([
   "excludeContentRegex",
   "caseSensitive",
 ])
-const configFields = new Set(["$schema", "version", "rules"])
+const configFields = new Set(["$schema", "configVersion", "rules"])
 
 export const emptyConfig = (): ReconConfig => ({
   $schema: schemaUrl,
-  version: 1,
+  configVersion: 1,
   rules: [],
 })
 
@@ -101,7 +101,7 @@ export const validateConfig = (value: unknown): ReconConfig => {
   if (value.$schema !== undefined && typeof value.$schema !== "string") {
     throw new Error("$schema must be a string")
   }
-  if (value.version !== 1) throw new Error("configuration version must be 1")
+  if (value.configVersion !== 1) throw new Error("configVersion must be 1")
   if (!Array.isArray(value.rules)) throw new Error("rules must be an array")
 
   const rules = value.rules.map(validateRule)
@@ -113,7 +113,7 @@ export const validateConfig = (value: unknown): ReconConfig => {
 
   return {
     ...(value.$schema === undefined ? {} : { $schema: value.$schema }),
-    version: 1,
+    configVersion: 1,
     rules,
   }
 }

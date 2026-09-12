@@ -19,7 +19,7 @@ export interface Rule {
 
 export interface ReconConfig {
   readonly $schema?: string
-  readonly version: 1
+  readonly configVersion: 1
   readonly rules: ReadonlyArray<Rule>
 }
 
