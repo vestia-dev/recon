@@ -9,35 +9,26 @@ import { targets, type Rule } from "./model"
 import { updateRecon } from "./update"
 import { docsUrl, version } from "./version"
 
-const help = `Recon provides advisory guidance for Git changes.
+const help = `Recon checks Git changes against repository-defined advisory rules.
 
-Usage:
-  recon [check] [--staged | --base <ref>] [--strict] [--json] [--config <path>]
-  recon init [--config <path>]
-  recon add --id <id> --message <message> --target <target> [match flags]
-  recon list [--config <path>]
-  recon show <rule-id> [--config <path>]
-  recon remove <rule-id> [--config <path>]
-  recon update [version]
-  recon upgrade [version]
-  recon get-docs-url
-  recon --version
-  recon -h | --help
+Usage: recon [command] [options]
 
-Targets:
-  added-files, added-lines, deleted-files, deleted-lines
+Commands:
+  check                         Check current changes (default command)
+  init                          Create recon.json
+  add                           Add a rule to recon.json
+  list                          List configured rules
+  show <rule-id>                Print one rule as JSON
+  remove <rule-id>              Remove one rule
+  update [version]              Install the latest or specified version
+  upgrade [version]             Alias for update
+  get-docs-url                  Print the documentation URL
 
-Match flags for recon add (repeatable unless noted):
-  --include <glob>                 Include matching paths
-  --exclude <glob>                 Exclude matching paths
-  --name <name>                    Include exact file names
-  --exclude-name <name>            Exclude exact file names
-  --extension <extension>          Include file extensions
-  --exclude-extension <extension>  Exclude file extensions
-  --content-regex <regex>          Include matching changed lines
-  --exclude-content-regex <regex>  Exclude matching changed lines
-  --case-sensitive                 Match with case sensitivity
-  --config <path>                  Use a custom configuration path
+Options:
+  -h, --help                    Print command help
+  --version                     Print the installed version
+
+Run 'recon get-docs-url' for the complete command and configuration reference.
 `
 
 interface ParsedOptions {

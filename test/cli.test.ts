@@ -44,6 +44,8 @@ describe("Recon CLI", () => {
     const long = command(root, "--help")
     expect(short.success).toBeTrue()
     expect(short.stdout.toString()).toBe(long.stdout.toString())
+    expect(short.stdout.toString()).not.toContain("Match flags")
+    expect(short.stdout.toString()).toContain("Run 'recon get-docs-url'")
   })
 
   test("adds, checks, lists, shows, and removes a rule", async () => {
