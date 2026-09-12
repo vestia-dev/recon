@@ -23,6 +23,19 @@ afterEach(async () => {
 })
 
 describe("Recon CLI", () => {
+  test("reports its version and documentation without a Git repository", async () => {
+    const root = await mkdtemp(join(tmpdir(), "recon-cli-test-"))
+    directories.push(root)
+
+    expect(command(root, "--version").stdout.toString().trim()).toBe("recon development")
+    expect(command(root, "get-docs-url").stdout.toString().trim()).toBe(
+      "https://github.com/vestia-dev/recon/blob/main/README.md",
+    )
+    const update = command(root, "upgrade")
+    expect(update.exitCode).toBe(1)
+    expect(update.stderr.toString()).toContain("official standalone Recon executable")
+  })
+
   test("adds, checks, lists, shows, and removes a rule", async () => {
     const root = await mkdtemp(join(tmpdir(), "recon-cli-test-"))
     directories.push(root)

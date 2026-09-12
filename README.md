@@ -5,7 +5,25 @@ language-independent, reports guidance without blocking by default, and can be
 compiled into a standalone executable with no Bun or Node.js requirement at
 runtime.
 
-## Build
+## Install
+
+On macOS or Linux:
+
+```sh
+curl -fsSL https://github.com/vestia-dev/recon/releases/latest/download/install.sh | sh
+```
+
+On Windows PowerShell:
+
+```powershell
+irm https://github.com/vestia-dev/recon/releases/latest/download/install.ps1 | iex
+```
+
+The installers detect the operating system, architecture, and Linux libc,
+verify the downloaded executable's SHA-256 checksum, and add it to the user's
+installation directory. Set `RECON_INSTALL_DIR` to override that directory.
+
+## Development
 
 Building Recon currently requires [Bun](https://bun.sh/):
 
@@ -49,6 +67,10 @@ recon add --id <id> --message <message> --target <target> [match flags]
 recon list
 recon show <rule-id>
 recon remove <rule-id>
+recon update [version]
+recon upgrade [version]
+recon get-docs-url
+recon --version
 ```
 
 Running `recon` is equivalent to `recon check`. It compares staged, unstaged,
@@ -63,6 +85,10 @@ Use `--strict` to exit with status 1 when guidance is found, or `--json` for
 structured output. Without `--strict`, guidance exits successfully.
 
 Every command accepts `--config <path>` to use a file other than `recon.json`.
+
+`recon update` and `recon upgrade` are aliases that install the latest release,
+or an exact version when one is provided. `recon get-docs-url` prints the
+README URL pinned to the installed version.
 
 ## Matching
 
@@ -149,5 +175,20 @@ recon add \
 
 ## Requirements
 
-The compiled Recon executable has no language runtime dependency. Git must be
-installed and the command must run inside a Git repository.
+The compiled Recon executable has no language runtime dependency. Auditing and
+rule management require Git and must run inside a Git repository.
+
+The update, version, and documentation URL commands do not require a Git
+repository. Self-update is available only from official standalone builds.
+
+## Releasing
+
+Update the version in `package.json`, run `bun run check`, then build every
+supported release executable and its checksum manifest:
+
+```sh
+bun run build:release
+```
+
+Upload the contents of `dist/release` to a GitHub Release tagged with the same
+version prefixed by `v`.

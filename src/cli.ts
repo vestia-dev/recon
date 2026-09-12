@@ -5,7 +5,9 @@ import { resolve } from "node:path"
 import { emptyConfig, readConfig, writeConfig } from "./config"
 import { collectChanges, findGitRoot } from "./git"
 import { findGuidance } from "./matcher"
-import { targets, type FileChange, type LineChange, type ReconConfig, type Rule } from "./model"
+import { targets, type Rule } from "./model"
+import { updateRecon } from "./update"
+import { docsUrl, version } from "./version"
 
 const help = `Recon provides advisory guidance for Git changes.
 
@@ -16,6 +18,10 @@ Usage:
   recon list [--config <path>]
   recon show <rule-id> [--config <path>]
   recon remove <rule-id> [--config <path>]
+  recon update [version]
+  recon upgrade [version]
+  recon get-docs-url
+  recon --version
 
 Targets:
   added-files, added-lines, deleted-files, deleted-lines
@@ -39,7 +45,7 @@ interface ParsedOptions {
   readonly positional: ReadonlyArray<string>
 }
 
-const booleanFlags = new Set(["help", "strict", "json", "staged", "case-sensitive"])
+const booleanFlags = new Set(["help", "version", "strict", "json", "staged", "case-sensitive"])
 const valueFlags = new Set([
   "base",
   "config",
@@ -187,6 +193,24 @@ const run = async (args: ReadonlyArray<string>, cwd = process.cwd()): Promise<nu
   const options = parseOptions(commandArgs)
   if (options.flags.has("help") || command === "help") {
     console.log(help)
+    return 0
+  }
+  if (options.flags.has("version") || command === "version") {
+    rejectUnexpected(options, [], ["version"])
+    ensureNoPositionals(options, command)
+    console.log(`recon ${version}`)
+    return 0
+  }
+  if (command === "get-docs-url") {
+    rejectUnexpected(options, [], [])
+    ensureNoPositionals(options, command)
+    console.log(docsUrl())
+    return 0
+  }
+  if (command === "update" || command === "upgrade") {
+    rejectUnexpected(options, [], [])
+    if (options.positional.length > 1) throw new Error(`recon ${command} accepts at most one version`)
+    console.log(await updateRecon(options.positional[0]))
     return 0
   }
 
