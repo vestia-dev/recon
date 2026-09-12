@@ -1,0 +1,23 @@
+{
+  "name": "@vestia-dev/recon",
+  "version": "0.1.0",
+  "description": "Advisory rules for code changes",
+  "license": "MIT",
+  "repository": "github:vestia-dev/recon",
+  "type": "module",
+  "private": true,
+  "bin": {
+    "recon": "src/cli.ts"
+  },
+  "scripts": {
+    "recon": "bun src/cli.ts",
+    "build": "bun build src/cli.ts --compile --outfile dist/recon",
+    "check": "tsc && bun test",
+    "test": "bun test"
+  },
+  "packageManager": "bun@1.4.0",
+  "devDependencies": {
+    "@types/bun": "^1.4.2",
+    "typescript": "^7.0.2"
+  }
+}

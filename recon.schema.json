@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/vestia-dev/recon/main/recon.schema.json",
+  "title": "Recon configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "rules"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "version": { "const": 1 },
+    "rules": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/rule" }
+    }
+  },
+  "$defs": {
+    "stringList": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "message", "target"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "message": { "type": "string", "minLength": 1 },
+        "target": {
+          "enum": ["added-files", "added-lines", "deleted-files", "deleted-lines"]
+        },
+        "include": { "$ref": "#/$defs/stringList" },
+        "exclude": { "$ref": "#/$defs/stringList" },
+        "name": { "$ref": "#/$defs/stringList" },
+        "excludeName": { "$ref": "#/$defs/stringList" },
+        "extension": { "$ref": "#/$defs/stringList" },
+        "excludeExtension": { "$ref": "#/$defs/stringList" },
+        "contentRegex": { "$ref": "#/$defs/stringList" },
+        "excludeContentRegex": { "$ref": "#/$defs/stringList" },
+        "caseSensitive": { "type": "boolean" }
+      }
+    }
+  }
+}
