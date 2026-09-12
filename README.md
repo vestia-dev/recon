@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src="./binoculars.png" alt="Recon binoculars" height="50">
+  <img src="./binoculars.png" alt="Recon binoculars" height="80">
   <br>
   Recon
 </h1>
