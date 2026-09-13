@@ -22,6 +22,24 @@ configuration other than `recon.json` at the Git root.
 
 Without `--strict`, findings are advisory and the command exits with status 0.
 
+## Rule design
+
+Recon rules are review prompts, not lint rules or definitive prohibitions. They
+should identify code worth a reviewer's attention, even when a potential issue
+cannot be proven statically.
+
+When proposing rules:
+
+- Translate semantic antipatterns into practical textual heuristics where possible.
+- Prefer focused patterns whose findings raise a concrete, useful review question.
+- Do not reject a rule solely because it may produce false positives or cannot
+  prove a violation.
+- Phrase findings as questions or guidance, such as “Review whether…”.
+- Narrow the scope when doing so meaningfully reduces noise.
+- Avoid heuristics only when irrelevant findings are likely to outweigh their
+  review value.
+- Leave the final judgment to the reviewer.
+
 ## Inspect and manage rules
 
 ```sh
